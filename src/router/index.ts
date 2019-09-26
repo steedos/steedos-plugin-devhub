@@ -5,7 +5,7 @@ import * as cors from 'cors'
 
 import * as graphqlHTTP from 'express-graphql'
 
-import schema from '../schema'
+import schema from './graphql'
 
 const router = express.Router()
 

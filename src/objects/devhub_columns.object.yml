@@ -1,17 +1,20 @@
-name: devhub_subscriptions
-label: Subscriptions
-icon: product_consumed
+name: devhub_columns
+label: Columns
+icon: calibration
 enable_api: true
 fields: 
-  id: 
-    label: Id
-    type: text
   type:
     label: Type
     type: text
-  subtype:
-    label: Sub Type
+  subscriptionIds:
+    label: Subscription Ids
     type: text
+    multiple: true
+  filters:
+    label: Filters
+    type: Object
+    blackbox: true
+    omit: true
   owner:
     label: Owner
     hidden: false

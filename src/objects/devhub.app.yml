@@ -1,0 +1,13 @@
+_id: devhub
+name: Devhub
+description: Admin console for devhub
+icon_slds: metrics
+is_creator: true
+objects: 
+  - connected_apps
+  - devhub_columns
+  - devhub_subscriptions
+mobile_objects: 
+  - connected_apps
+  - devhub_columns
+  - devhub_subscriptions
