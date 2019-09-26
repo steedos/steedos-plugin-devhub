@@ -1,4 +1,5 @@
 import * as express from 'express';
+import * as path from 'path';
 import * as bodyParser from 'body-parser'
 import * as cors from 'cors'
 
@@ -20,5 +21,8 @@ router.use(
     graphiql: true,
   }),
 )
+
+const dsPath = require.resolve("@salesforce-ux/design-system/package.json")
+router.use("/plugins/design-system/assets/", express.static(dsPath.replace("package.json", 'assets')))
 
 export default router
