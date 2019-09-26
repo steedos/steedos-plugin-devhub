@@ -14,7 +14,7 @@ const subscriptionItems = [{
   "objectLabel": "合同",
   "createdAt":"2019-09-20T13:20:48.665Z",
   "updatedAt":new Date().toISOString(),
-  "serverUrl": process.env.STEEDOS_URL
+  "serverUrl": process.env.ROOT_URL
 }, {
   "columnId": "accounts",
   "id":"/search/accounts?q=user:steedos is:issue sort:updated-desc",
@@ -23,7 +23,7 @@ const subscriptionItems = [{
   "objectLabel": "单位",
   "createdAt":"2019-09-20T13:20:48.665Z",
   "updatedAt":"2019-09-20T14:38:48.665Z",
-  "serverUrl": process.env.STEEDOS_URL
+  "serverUrl": process.env.ROOT_URL
 }, {
   "columnId": "contacts",
   "id":"/search/contacts?q=user:steedos is:issue sort:updated-desc",
@@ -32,7 +32,7 @@ const subscriptionItems = [{
   "objectLabel": "联系人",
   "createdAt":"2019-09-20T13:20:48.665Z",
   "updatedAt":"2019-09-20T14:38:48.665Z",
-  "serverUrl": process.env.STEEDOS_URL
+  "serverUrl": process.env.ROOT_URL
 }, {
   "columnId": "instances",
   "id":"/search/instances?q=user:steedos is:issue sort:updated-desc",
@@ -41,7 +41,7 @@ const subscriptionItems = [{
   "objectLabel": "审批",
   "createdAt":"2019-09-20T13:20:48.665Z",
   "updatedAt":"2019-09-20T14:38:48.665Z",
-  "serverUrl": process.env.STEEDOS_URL
+  "serverUrl": process.env.ROOT_URL
 }]
 
 const columns = {

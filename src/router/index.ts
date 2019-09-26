@@ -10,13 +10,11 @@ import schema from '../schema'
 const router = express.Router()
 
 
-router.use(cors())
 router.use(bodyParser.json())
 router.use(bodyParser.urlencoded({ extended: true }))
 
 router.use(
   '/graphql',
-  cors(),
   graphqlHTTP({
     schema,
     graphiql: true,
