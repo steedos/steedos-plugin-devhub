@@ -14,7 +14,8 @@ server.Fiber(function () {
   try {
     server.Profile.run("Server startup", function () {
       server.loadServerBundles();
-      WebApp.rawConnectHandlers.use(cors({origin: true}))
+      WebApp.rawConnectHandlers.use(cors({origin: true, credentials: true}));
+
       steedos.init();
 
       WebApp.rawConnectHandlers.use(oauthRouter)
