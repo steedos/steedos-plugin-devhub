@@ -22,7 +22,5 @@ router.use(
   }),
 )
 
-const dsPath = require.resolve("@salesforce-ux/design-system/package.json")
-router.use("/plugins/design-system/assets/", express.static(dsPath.replace("package.json", 'assets')))
 
 export default router
