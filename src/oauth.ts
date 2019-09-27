@@ -45,7 +45,7 @@ router.get(
       code,
       { grant_type: 'client_credentials' },
       (e: any, accessToken: string, refreshToken: string, results: any) => {
-        setToken(accessToken)
+        setToken(accessToken);
         const data = {
           app_token: accessToken,
           github_token: accessToken,
