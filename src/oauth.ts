@@ -53,7 +53,7 @@ router.get(
         res.end(
           '<script>window.opener.postMessage(' +
             JSON.stringify(data) +
-            ", '*');</script>",
+            ", '*');window.close();</script>",
         )
         res.end({})
       },

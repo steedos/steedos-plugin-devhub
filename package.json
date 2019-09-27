@@ -29,7 +29,7 @@
         "lint": "^0.7.0",
         "lodash": "^4.17.15",
         "oauth": "^0.9.15",
-        "steedos-server": "^1.6.7"
+        "steedos-server": "^1.6.9"
     },
     "repository": {
         "type": "git",
