@@ -137,8 +137,8 @@ export const plan = {
 export const me = () => {
   return {
     _id: "5d84bc3de4bc290017d94b57",
-    columns: columns,
-    subscriptions: subscriptions,
+    columns: [], //columns,
+    subscriptions: [], //subscriptions,
     github: github(),
     plan: plan,
     createdAt: "2019-09-20T11:47:09.644Z",
@@ -146,11 +146,3 @@ export const me = () => {
     lastLoginAt: "2019-09-24T05:37:44.937Z"
   }
 }
-
-export const login = () => {
-  return {
-    appToken: appToken,
-    user: me()
-  }
-}
-

@@ -1,3 +1,4 @@
+import * as _ from 'lodash'
 import { GraphQLObjectType } from 'graphql'
 import {
   IExecutableSchemaDefinition,
@@ -5,13 +6,14 @@ import {
 } from 'graphql-tools'
 import { GraphQLJSON, GraphQLJSONObject } from 'graphql-type-json'
 
-import { login, me } from '../data'
+import { db } from '../db'
+import { me } from '../data'
 
 const schemaConfig = `
   scalar JSON
   scalar JSONObject
 
-  type Column {
+  input ColumnInput {
     id: String
     type: String
     filters: JSONObject
@@ -20,10 +22,10 @@ const schemaConfig = `
     updatedAt: String
   }
 
-  type Subscription {
+  input ColumnSubscriptionInput {
     id: String
     type: String
-    substype: String
+    subtype: String
     params: JSONObject
     createdAt: String
     updatedAt: String
@@ -107,16 +109,109 @@ const schemaConfig = `
     login: Login
     me: User
   }
+
+  type RootMutation {
+    replaceColumnsAndSubscriptions(
+      columns: [ColumnInput]!
+      subscriptions: [ColumnSubscriptionInput]!
+      columnsUpdatedAt: String
+      subscriptionsUpdatedAt: String
+    ): JSONObject
+    refreshUserInstallations: JSONObject
+  }
   schema {
     query: RootQuery
+    mutation: RootMutation
   }
 `
+const replaceColumnsAndSubscriptions = async (
+  r: any, 
+  params: { 
+    columns: [Object]
+    subscriptions: [Object]
+    columnsUpdatedAt: String
+    subscriptionsUpdatedAt: String 
+  }, 
+  req: any) => {
+    const userId = await getUserId(req)
+    const spaceId = getSpaceId(req)
+    _.each(params.columns, (column:any) => {
+      column._id = column.id
+      column.space = spaceId
+      column.owner = userId 
+      column.created_by = userId
+      db.getObject("devhub_columns").insert(column)
+    })
+    _.each(params.subscriptions, (subscription:any) => {
+      subscription._id = subscription.id
+      subscription.space = spaceId
+      subscription.owner = userId 
+      subscription.created_by = userId
+      db.getObject("devhub_subscriptions").insert(subscription)
+    })
+
+}
+
+const getAppToken = (req: any) => {
+  let appToken = "unknown";
+  let authorization = req.headers.authorization;
+  if (authorization && authorization.split(' ')[0].toLowerCase() == 'bearer') {
+    appToken = authorization.split(' ')[1];
+  }
+  return appToken
+}
+
+const getSpaceId = (req: any) => {
+  const appToken = getAppToken(req);
+  if (appToken && appToken.split(',').length == 2) {
+    return appToken.split(',')[0];
+  }
+  return null
+}
+
+const getAuthToken = (req: any) => {
+  const appToken = getAppToken(req);
+  let authToken = undefined
+  if (appToken && appToken.split(',').length == 2) {
+    return appToken.split(',')[1];
+  }
+  return null
+}
+
+const getUserId = async (req: any) => {
+  const authToken = getAuthToken(req)
+  const sessions:any = await db.getObject("sessions").find({
+    filters: [["token", "=", authToken]],
+    fields:["userId"]
+  })
+  if (sessions && sessions[0])
+    return sessions[0].userId
+  return null
+}
+
+const login = async (
+  r: any, 
+  params: { 
+    columns: [Object]
+    subscriptions: [Object]
+    columnsUpdatedAt: String
+    subscriptionsUpdatedAt: String 
+  }, 
+  req: any) => {
+    return {
+      appToken: getAppToken(req),
+      user: me()
+    }
+}
 
 const schemaResolvers = {
   RootQuery: {
-    login: (r: any, a: { [key: string]: any }, ctx: any) => login(),
+    login: login,
     me: (r: any, a: { [key: string]: any }, ctx: any) => me(),
   },
+  RootMutation: {
+    replaceColumnsAndSubscriptions: replaceColumnsAndSubscriptions,
+  }
 }
 
 const schema = makeExecutableSchema({

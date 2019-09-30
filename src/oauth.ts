@@ -1,5 +1,7 @@
 import * as express from 'express'
 import * as oauth from 'oauth'
+import * as Cookies from 'cookies';
+
 const router = express.Router()
 
 const GITHUB_OAUTH_CLIENT_ID = process.env.GITHUB_OAUTH_CLIENT_ID
@@ -40,6 +42,13 @@ router.get('/github/oauth', (req: express.Request, res: express.Response) => {
 router.get(
   '/github/callback',
   (req: express.Request, res: express.Response) => {
+    let cookies = new Cookies(req, res);
+    let spaceToken = cookies.get("X-Space-Token");
+    if (!spaceToken) {
+      res.end("Please sign to steedos first");
+      return
+    }
+
     const code = req.query.code
     oauth2.getOAuthAccessToken(
       code,
@@ -47,7 +56,7 @@ router.get(
       (e: any, accessToken: string, refreshToken: string, results: any) => {
         setToken(accessToken);
         const data = {
-          app_token: accessToken,
+          app_token: spaceToken,
           github_token: accessToken,
         }
         res.end(

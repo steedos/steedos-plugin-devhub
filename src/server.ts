@@ -23,7 +23,6 @@ server.Fiber(function () {
       
       server.callStartupHooks();
       server.runMain();
-
     })
   } catch (error) {
     console.error(error.stack)
