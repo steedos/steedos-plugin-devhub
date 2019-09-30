@@ -3,8 +3,8 @@ label: Subscriptions
 icon: product_consumed
 enable_api: true
 fields: 
-  id: 
-    label: Id
+  name: 
+    label: Name
     type: text
   type:
     label: Type
@@ -20,7 +20,7 @@ list_views:
   all:
     label: All
     columns:
-      - id
+      - name
       - type
       - subtype
       - modified

@@ -127,27 +127,64 @@ const schemaConfig = `
 const replaceColumnsAndSubscriptions = async (
   r: any, 
   params: { 
-    columns: [Object]
-    subscriptions: [Object]
-    columnsUpdatedAt: String
-    subscriptionsUpdatedAt: String 
+    columns: [any]
+    subscriptions: [any]
+    columnsUpdatedAt: string
+    subscriptionsUpdatedAt: string 
   }, 
   req: any) => {
     const userId = await getUserId(req)
     const spaceId = getSpaceId(req)
-    _.each(params.columns, (column:any) => {
-      column._id = column.id
+
+
+    const dbcolumns = await db.getObject("devhub_columns").find({
+      filters: [["space", "=", spaceId],["owner", "=", userId]],
+      fields: ["_id"]
+    })
+    for (let column of dbcolumns) {
+      await db.getObject("devhub_columns").delete(column._id)
+    }
+    const columnIds = []
+    for (let column of params.columns) {
+      column.name = column.id
       column.space = spaceId
       column.owner = userId 
       column.created_by = userId
-      db.getObject("devhub_columns").insert(column)
+      delete column.id
+      const columnId = await db.getObject("devhub_columns").insert(column)
+      columnIds.push(columnId._id)
+    }
+
+
+    const dbsubscriptions = await db.getObject("devhub_subscriptions").find({
+      filters: [["space", "=", spaceId],["owner", "=", userId]],
+      fields: ["_id"]
     })
-    _.each(params.subscriptions, (subscription:any) => {
-      subscription._id = subscription.id
+
+    for (let sub of dbsubscriptions) {
+      await db.getObject("devhub_subscriptions").delete(sub._id)
+    }
+    const subscriptionIds = []
+    for (let subscription of params.subscriptions) {
+      subscription.name = subscription.id
       subscription.space = spaceId
       subscription.owner = userId 
       subscription.created_by = userId
-      db.getObject("devhub_subscriptions").insert(subscription)
+      delete subscription.id
+      const subscriptionId = await db.getObject("devhub_subscriptions").insert(subscription)
+      subscriptionIds.push(subscriptionId._id)
+    }
+
+    await db.getObject("devhub_users").delete(userId)
+    await db.getObject("devhub_users").insert({
+      _id: userId,
+      name: userId,
+      columnIds: columnIds,
+      subscriptionIds: subscriptionIds,
+      columnsUpdatedAt: new Date(params.columnsUpdatedAt),
+      subscriptionsUpdatedAt: new Date(params.subscriptionsUpdatedAt),
+      owner: userId,
+      space: spaceId
     })
 
 }
@@ -192,10 +229,7 @@ const getUserId = async (req: any) => {
 const login = async (
   r: any, 
   params: { 
-    columns: [Object]
-    subscriptions: [Object]
-    columnsUpdatedAt: String
-    subscriptionsUpdatedAt: String 
+    [key: string]: any
   }, 
   req: any) => {
     return {

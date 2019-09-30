@@ -1,34 +1,41 @@
-name: devhub_columns
-label: Columns
+name: devhub_users
+label: Users
 icon: calibration
 enable_api: true
 fields: 
   name:
     label: Name
     type: text
-  type:
-    label: Type
-    type: text
-  subscriptionIds:
-    label: Subscription Ids
-    type: text
-    multiple: true
-  filters:
-    label: Filters
-    type: Object
-    blackbox: true
-    omit: true
   owner:
     label: Owner
     hidden: false
     omit: false
+  columnIds:
+    label: Columns
+    type: lookup
+    reference_to: devhub_columns
+    multiple: true
+    is_wide: true
+  subscriptionIds:
+    label: Subscriptions
+    type: lookup
+    reference_to: devhub_subscriptions
+    multiple: true
+    is_wide: true
+  columnsUpdatedAt:
+    label: Columns Updated At
+    type: datetime
+  subscriptionsUpdatedAt:
+    label: Subscriptions Updated At
+    type: datetime
 list_views:
   all:
     label: All
     columns:
       - name
-      - type
-      - subtype
+      - columnIds
+      - columnsUpdatedAt
+      - subscriptionsUpdatedAt
       - modified
       - owner
 permission_set:

@@ -5,9 +5,11 @@ icon_slds: metrics
 is_creator: true
 objects: 
   - connected_apps
+  - devhub_users
   - devhub_columns
   - devhub_subscriptions
 mobile_objects: 
   - connected_apps
+  - devhub_users
   - devhub_columns
   - devhub_subscriptions
