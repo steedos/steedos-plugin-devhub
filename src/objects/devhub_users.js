@@ -1,6 +1,5 @@
 import { getSteedosSchema } from '@steedos/objectql';
 import * as Cookies from 'cookies';
-import { SSL_OP_TLS_BLOCK_PADDING_BUG } from 'constants';
 
 const db = getSteedosSchema()
 

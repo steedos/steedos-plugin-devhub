@@ -7,7 +7,7 @@ import {
 import { GraphQLJSON, GraphQLJSONObject } from 'graphql-type-json'
 
 import { db } from '../db'
-import {getTokens, getUserId, getUser} from '../objects/devhub_users.object'
+import {getTokens, getUserId, getUser} from '../objects/devhub_users'
 
 const schemaConfig = `
   scalar JSON
