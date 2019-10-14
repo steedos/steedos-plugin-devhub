@@ -9,4 +9,3 @@ public:
       folder: "./storage"
 plugins:
   - "@steedos/accounts"
-  - "@steedos/app-contracts"
