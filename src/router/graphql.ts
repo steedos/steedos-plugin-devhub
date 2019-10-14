@@ -6,8 +6,7 @@ import {
 } from 'graphql-tools'
 import { GraphQLJSON, GraphQLJSONObject } from 'graphql-type-json'
 
-import { db } from '../db'
-import {getTokens, getUserId, getSpaceId, getUser, createOrUpdateUser} from '../objects/devhub_users'
+import { db, getTokens, getUserId, getSpaceId, getUser, createOrUpdateUser} from '../db'
 import { MeteorODataAPIV4Router } from '@steedos/core'
 
 const schemaConfig = `

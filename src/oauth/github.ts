@@ -2,7 +2,7 @@ import * as express from 'express'
 import * as oauth from 'oauth'
 import { fetchUrl } from 'fetch'
 
-import { getTokens, getUserId, createOrUpdateUser, getSpaceId } from '../objects/devhub_users';
+import { getTokens, getUserId, createOrUpdateUser, getSpaceId } from '../db';
 
 const router = express.Router()
 
