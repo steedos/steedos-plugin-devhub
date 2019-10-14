@@ -1,0 +1,37 @@
+name: devhub_plans
+label: Plans
+icon: calibration
+enable_api: true
+fields: 
+  name:
+    label: Name
+    type: text
+  owner:
+    label: Owner
+    hidden: false
+    omit: false
+
+list_views:
+  all:
+    label: All
+    columns:
+      - name
+      - modified
+      - owner
+permission_set:
+  user:
+    allowCreate: false
+    allowDelete: false
+    allowEdit: false
+    allowRead: true
+    modifyAllRecords: false
+    viewAllRecords: false
+    modifyCompanyRecords: false
+    viewCompanyRecords: true
+  admin:
+    allowCreate: true
+    allowDelete: true
+    allowEdit: true
+    allowRead: true
+    modifyAllRecords: true
+    viewAllRecords: true

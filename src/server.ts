@@ -5,7 +5,7 @@ import * as server from '@steedos/meteor-bundle-runner';
 import * as steedos from '@steedos/core'
 import * as cors from 'cors'
 
-import oauthRouter from './oauth'
+import oauthRouter from './oauth/github'
 import router from './router'
 
 declare var WebApp;

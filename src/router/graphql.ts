@@ -7,7 +7,7 @@ import {
 import { GraphQLJSON, GraphQLJSONObject } from 'graphql-type-json'
 
 import { db } from '../db'
-import { me } from '../data'
+import {getTokens, getUserId, getUser} from '../objects/devhub_users.object'
 
 const schemaConfig = `
   scalar JSON
@@ -133,9 +133,9 @@ const replaceColumnsAndSubscriptions = async (
     subscriptionsUpdatedAt: string 
   }, 
   req: any) => {
+    const tokens = getTokens(req)
     const userId = await getUserId(req)
-    const spaceId = getSpaceId(req)
-
+    const spaceId = tokens.spaceId
 
     const dbcolumns = await db.getObject("devhub_columns").find({
       filters: [["space", "=", spaceId],["owner", "=", userId]],
@@ -175,73 +175,135 @@ const replaceColumnsAndSubscriptions = async (
       subscriptionIds.push(subscriptionId._id)
     }
 
-    await db.getObject("devhub_users").delete(userId)
-    await db.getObject("devhub_users").insert({
-      _id: userId,
-      name: userId,
-      columnIds: columnIds,
-      subscriptionIds: subscriptionIds,
-      columnsUpdatedAt: new Date(params.columnsUpdatedAt),
-      subscriptionsUpdatedAt: new Date(params.subscriptionsUpdatedAt),
-      owner: userId,
-      space: spaceId
-    })
+    const user = await db.getObject("devhub_users").findOne(userId, {fields: ["_id"]})
+    if (user) {
+      await db.getObject("devhub_users").updateOne(userId, {
+        name: userId,
+        columnIds: columnIds,
+        subscriptionIds: subscriptionIds,
+      })
+    } else {
+      await db.getObject("devhub_users").insert({
+        _id: userId,
+        name: userId,
+        columnIds: columnIds,
+        subscriptionIds: subscriptionIds,
+        columnsUpdatedAt: new Date(params.columnsUpdatedAt),
+        subscriptionsUpdatedAt: new Date(params.subscriptionsUpdatedAt),
+        owner: userId,
+        space: spaceId
+      })
+    }
 
 }
 
-const getAppToken = (req: any) => {
-  let appToken = "unknown";
-  let authorization = req.headers.authorization;
-  if (authorization && authorization.split(' ')[0].toLowerCase() == 'bearer') {
-    appToken = authorization.split(' ')[1];
+const getPlan = async (req: any) => {
+  return { 
+    "id":"5d88053df1881ef99be58133",
+    "source":"none",
+    "amount":0,
+    "currency":"usd",
+    "trialPeriodDays":0,
+    "interval":null,
+    "intervalCount":1,
+    "status":"active",
+    "startAt":"2019-09-20T11:47:09.644Z",
+    "cancelAt":null,
+    "cancelAtPeriodEnd":false,
+    "trialStartAt":null,
+    "trialEndAt":null,
+    "currentPeriodStartAt":"2019-09-20T11:47:09.644Z",
+    "currentPeriodEndAt":null,
+    "reason":null,
+    "featureFlags":{ 
+      "columnsLimit":6,
+      "enableFilters":true,
+      "enableSync":false,
+      "enablePrivateRepositories":false,
+      "enablePushNotifications":false
+    },
+    "createdAt":"2019-09-20T11:47:09.644Z",
+    "updatedAt":"2019-09-20T11:47:09.644Z"
+  } 
+}
+
+const getGithub = async (user) => {
+
+  return {
+    "app":{ 
+      "scope":[ 
+      ],
+      "token": null,
+      "tokenType":"bearer",
+      "tokenCreatedAt":"2019-09-21T10:55:32.406Z"
+    },
+    "oauth":{ 
+      "scope":[ 
+        "notifications",
+        "user:email"
+      ],
+      "token": user.githubAccessToken,
+      "tokenType":"bearer",
+      "tokenCreatedAt":"2019-09-21T10:55:33.796Z"
+    },
+    "user":{ 
+      "id": user.githubId,
+      "nodeId": user.githubNodeId,
+      "login": user.githubLogin,
+      "name": user.name,
+      "avatarUrl": user.githubAvatarUrl
+    }
   }
-  return appToken
+
 }
 
-const getSpaceId = (req: any) => {
-  const appToken = getAppToken(req);
-  if (appToken && appToken.split(',').length == 2) {
-    return appToken.split(',')[0];
-  }
-  return null
-}
+const getMe = async (req: any) => {
+  const userId = await getUserId(req)
 
-const getAuthToken = (req: any) => {
-  const appToken = getAppToken(req);
-  let authToken = undefined
-  if (appToken && appToken.split(',').length == 2) {
-    return appToken.split(',')[1];
-  }
-  return null
-}
+  const user:any = await getUser(userId)
 
-const getUserId = async (req: any) => {
-  const authToken = getAuthToken(req)
-  const sessions:any = await db.getObject("sessions").find({
-    filters: [["token", "=", authToken]],
-    fields:["userId"]
+  if (user == null)
+    throw new Error("User not found.")
+
+  const columns:any = await db.getObject("devhub_columns").find({
+    filters: [["owner", "=", userId], ["_id", "in", user.columnIds]],
+    fields:["name", "type", "subscriptionIds", "filters"]
   })
-  if (sessions && sessions[0])
-    return sessions[0].userId
-  return null
-}
 
+  const subscriptions:any = await db.getObject("devhub_subscriptions").find({
+    filters: [["owner", "=", userId], ["_id", "in", user.subscriptionIds]],
+    fields:["name", "type", "subtype"]
+  })
+
+  const me = {
+    _id: userId,
+    columns: [], //columns,
+    subscriptions: [], //subscriptions,
+    github: getGithub(user),
+    plan: getPlan(req),
+    createdAt: "2019-09-20T11:47:09.644Z",
+    updatedAt: "2019-09-24T06:37:44.974Z",
+    lastLoginAt: "2019-09-24T05:37:44.937Z"
+  }
+  return me;
+}
 const login = async (
   r: any, 
   params: { 
     [key: string]: any
   }, 
   req: any) => {
+    const tokens = getTokens(req)
     return {
-      appToken: getAppToken(req),
-      user: me()
+      appToken: tokens.spaceToken,
+      user: await getMe(req)
     }
 }
 
 const schemaResolvers = {
   RootQuery: {
     login: login,
-    me: (r: any, a: { [key: string]: any }, ctx: any) => me(),
+    me: async (r: any, a: { [key: string]: any }, req: any) => await getMe(req),
   },
   RootMutation: {
     replaceColumnsAndSubscriptions: replaceColumnsAndSubscriptions,

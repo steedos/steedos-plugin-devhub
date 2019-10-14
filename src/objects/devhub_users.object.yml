@@ -3,8 +3,7 @@ label: Users
 icon: calibration
 enable_api: true
 fields: 
-  name:
-    label: Name
+  name: 
     type: text
   owner:
     label: Owner
@@ -27,6 +26,22 @@ fields:
     type: datetime
   subscriptionsUpdatedAt:
     label: Subscriptions Updated At
+    type: datetime
+  githubId: 
+    type: text
+  githubLogin: 
+    type: text
+  githubNodeId: 
+    type: text
+  githubAvatarUrl: 
+    type: text
+  githubAccessToken:
+    type: text
+  githubAccessTokenCreatedAt:
+    type: datetime
+  githubRefreshToken:
+    type: text
+  githubRefreshTokenCreatedAt:
     type: datetime
 list_views:
   all:
