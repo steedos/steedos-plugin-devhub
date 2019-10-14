@@ -12,6 +12,11 @@ fields:
   subtype:
     label: Sub Type
     type: text
+  params:
+    label: Params
+    type: Object
+    blackbox: true
+    omit: true
   owner:
     label: Owner
     hidden: false

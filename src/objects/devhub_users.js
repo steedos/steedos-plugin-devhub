@@ -29,7 +29,12 @@ export const getTokens = (req) => {
       spaceToken: spaceToken
     }
   }
-  return null
+  return {}
+}
+
+export const getSpaceId = async (req) => {
+  const tokens = getTokens(req)
+  return tokens.spaceId
 }
 
 export const getUserId = async (req) => {
@@ -47,10 +52,23 @@ export const getUserId = async (req) => {
   return null
 }
 
-export const updateUser = async (userId, user) => {
-  return await db.getObject("devhub_users").updateOne(userId, user);
+export const createOrUpdateUser = async (userId, spaceId, doc) => {
+  const id = userId + "," + spaceId
+  const dbUser = await db.getObject("devhub_users").findOne(id, {space: spaceId});
+  if (dbUser)
+    return await db.getObject("devhub_users").updateOne(id, doc);
+  else {
+    const user = Object.assign({
+      _id: id,
+      space: spaceId,
+      owner: userId
+    }, doc)
+    console.log(user)
+    return await db.getObject("devhub_users").insert(user);
+  }
 }
 
-export const getUser = async (userId) => {
-  return await db.getObject("devhub_users").findOne(userId);
+export const getUser = async (userId, spaceId) => {
+  const id = userId + "," + spaceId
+  return await db.getObject("devhub_users").findOne(id);
 }

@@ -7,7 +7,8 @@ import {
 import { GraphQLJSON, GraphQLJSONObject } from 'graphql-type-json'
 
 import { db } from '../db'
-import {getTokens, getUserId, getUser} from '../objects/devhub_users'
+import {getTokens, getUserId, getSpaceId, getUser, createOrUpdateUser} from '../objects/devhub_users'
+import { MeteorODataAPIV4Router } from '@steedos/core'
 
 const schemaConfig = `
   scalar JSON
@@ -135,7 +136,7 @@ const replaceColumnsAndSubscriptions = async (
   req: any) => {
     const tokens = getTokens(req)
     const userId = await getUserId(req)
-    const spaceId = tokens.spaceId
+    const spaceId = await getSpaceId(req)
 
     const dbcolumns = await db.getObject("devhub_columns").find({
       filters: [["space", "=", spaceId],["owner", "=", userId]],
@@ -175,25 +176,12 @@ const replaceColumnsAndSubscriptions = async (
       subscriptionIds.push(subscriptionId._id)
     }
 
-    const user = await db.getObject("devhub_users").findOne(userId, {fields: ["_id"]})
-    if (user) {
-      await db.getObject("devhub_users").updateOne(userId, {
-        name: userId,
-        columnIds: columnIds,
-        subscriptionIds: subscriptionIds,
-      })
-    } else {
-      await db.getObject("devhub_users").insert({
-        _id: userId,
-        name: userId,
-        columnIds: columnIds,
-        subscriptionIds: subscriptionIds,
-        columnsUpdatedAt: new Date(params.columnsUpdatedAt),
-        subscriptionsUpdatedAt: new Date(params.subscriptionsUpdatedAt),
-        owner: userId,
-        space: spaceId
-      })
-    }
+    createOrUpdateUser(userId, spaceId, {
+      columnIds: columnIds,
+      subscriptionIds: subscriptionIds,
+      columnsUpdatedAt: new Date(params.columnsUpdatedAt),
+      subscriptionsUpdatedAt: new Date(params.subscriptionsUpdatedAt),
+    })
 
 }
 
@@ -259,32 +247,68 @@ const getGithub = async (user) => {
 
 const getMe = async (req: any) => {
   const userId = await getUserId(req)
+  const spaceId = await getSpaceId(req)
 
-  const user:any = await getUser(userId)
+  const user:any = await getUser(userId, spaceId)
 
   if (user == null)
     throw new Error("User not found.")
 
-  const columns:any = await db.getObject("devhub_columns").find({
-    filters: [["owner", "=", userId], ["_id", "in", user.columnIds]],
-    fields:["name", "type", "subscriptionIds", "filters"]
-  })
+  let columns = {
+    allIds: [],
+    byId: {}
+  }
+  if (user.columnIds && user.columnIds.length>0) {
+    columns.allIds = user.columnIds
+    const dbColumns = await db.getObject("devhub_columns").find({
+      filters: [["owner", "=", userId], ["_id", "in", user.columnIds]],
+      fields:["name", "type", "subscriptionIds", "filters"]
+    })
+    for (let item of dbColumns) {
+      columns.byId[item._id] = {
+        id: item._id,
+        type: item.type,
+        subscriptionIds: item.subscriptionIds,
+        filters: item.filters,
+        createdAt: item.created,
+        updatedAt: item.modified,
+      }
+    }
+  }
 
-  const subscriptions:any = await db.getObject("devhub_subscriptions").find({
-    filters: [["owner", "=", userId], ["_id", "in", user.subscriptionIds]],
-    fields:["name", "type", "subtype"]
-  })
+  let subscriptions = {
+    allIds: [],
+    byId: {}
+  }
+  if (user.subscriptionIds && user.subscriptionIds.length>0) {
+    subscriptions.allIds = user.subscriptionIds
+    const dbSubscriptions = await db.getObject("devhub_subscriptions").find({
+      filters: [["owner", "=", userId], ["_id", "in", user.subscriptionIds]],
+      fields:["name", "type", "subtype"]
+    })
+    for (let item of dbSubscriptions) {
+      subscriptions.byId[item._id] = {
+        id: item._id,
+        type: item.type,
+        subtype: item.subtype,
+        params: item.params,
+        createdAt: item.created,
+        updatedAt: item.modified,
+      }
+    }
+  }
 
   const me = {
-    _id: userId,
-    columns: [], //columns,
-    subscriptions: [], //subscriptions,
+    _id: user._id,
+    columns: columns,
+    subscriptions: subscriptions,
     github: getGithub(user),
     plan: getPlan(req),
     createdAt: "2019-09-20T11:47:09.644Z",
     updatedAt: "2019-09-24T06:37:44.974Z",
     lastLoginAt: "2019-09-24T05:37:44.937Z"
   }
+  console.log(me)
   return me;
 }
 const login = async (

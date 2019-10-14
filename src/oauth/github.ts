@@ -2,7 +2,7 @@ import * as express from 'express'
 import * as oauth from 'oauth'
 import { fetchUrl } from 'fetch'
 
-import { getTokens, getUserId, updateUser } from '../objects/devhub_users';
+import { getTokens, getUserId, createOrUpdateUser, getSpaceId } from '../objects/devhub_users';
 
 const router = express.Router()
 
@@ -52,6 +52,7 @@ router.get(
       return
     }
     let userId = await getUserId(req);
+    let spaceId = await getSpaceId(req);
 
     const code = req.query.code
     oauth2.getOAuthAccessToken(
@@ -76,7 +77,7 @@ router.get(
         }, async (error, meta, body) => {
           const github = JSON.parse(body.toString());
           
-          const user = await updateUser(userId, {
+          const user = await createOrUpdateUser(userId, spaceId, {
             githubId: github.id,
             githubNodeId: github.node_id,
             githubLogin: github.login,
