@@ -28,7 +28,7 @@ yarn start
 
 Fork project https://github.com/devhubapp/devhub
 
-and change the [API_BASE_URL](https://github.com/devhubapp/devhub/blob/master/packages/core/src/utils/constants.ts) to server ROOT_URL in server environment variables.
+modifiy [constants.ts](https://github.com/devhubapp/devhub/blob/master/packages/core/src/utils/constants.ts) , change the API_BASE_URL variable from 'https://api.devhubapp.com' to ROOT_URL in server environment variables.
 
 ## Start client
 
