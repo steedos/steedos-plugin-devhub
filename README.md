@@ -1,6 +1,8 @@
 # Devhub Server
 
-Host and manage your own devhub server, powered by Steedos Developer Platform.
+The devhub project is great! We work on this plugin so we can host our own server behind firewall.
+
+More importantly, we are working on a enterprise notification center project, not only for github, but for salesforce, sap and much more systems.
 
 ## Register Github App
 
