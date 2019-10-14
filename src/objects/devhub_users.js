@@ -3,6 +3,10 @@ import * as Cookies from 'cookies';
 
 const db = getSteedosSchema()
 
+export const users = () => {
+  return db.getObject("devhub_users")
+}
+
 export const getTokens = (req) => {
   let spaceToken = null;
   let authorization = req.headers.authorization;
