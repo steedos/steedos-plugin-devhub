@@ -183,6 +183,7 @@ const replaceColumnsAndSubscriptions = async (
       subscriptionsUpdatedAt: new Date(params.subscriptionsUpdatedAt),
     })
 
+    return true
 }
 
 const getPlan = async (req: any) => {
@@ -262,7 +263,6 @@ const getMe = async (req: any) => {
     columns.allIds = user.columnIds
     const dbColumns = await db.getObject("devhub_columns").find({
       filters: [["owner", "=", userId], ["_id", "in", user.columnIds]],
-      fields:["name", "type", "subscriptionIds", "filters"]
     })
     for (let item of dbColumns) {
       columns.byId[item._id] = {
@@ -284,7 +284,6 @@ const getMe = async (req: any) => {
     subscriptions.allIds = user.subscriptionIds
     const dbSubscriptions = await db.getObject("devhub_subscriptions").find({
       filters: [["owner", "=", userId], ["_id", "in", user.subscriptionIds]],
-      fields:["name", "type", "subtype"]
     })
     for (let item of dbSubscriptions) {
       subscriptions.byId[item._id] = {
