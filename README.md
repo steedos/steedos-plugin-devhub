@@ -2,7 +2,7 @@
 
 The [devhub](https://github.com/devhubapp/devhub) project is great! We work on this plugin so we can host our own server.
 
-More importantly, we are working on a [Enterprise Notification Center](https://github.com/steedos/steedos-mobile) project, not only for github, but for jira, salesforce, and other enterprise systems.
+More importantly, we are working on a [Enterprise Notification Center](https://github.com/steedos/steedos-notification-center) project, not only for github, but for jira, salesforce, and other enterprise systems.
 
 ## Register Github App
 
