@@ -6,7 +6,8 @@ import {
 } from 'graphql-tools'
 import { GraphQLJSON, GraphQLJSONObject } from 'graphql-type-json'
 
-import { db, getTokens, getUserId, getSpaceId, getUser, createOrUpdateUser} from '../db'
+import { db, getTokens, getUserId, getSpaceId, getUser, 
+         createOrUpdateUser, createOrUpdateColumn, createOrUpdateSubscription } from '../db'
 import { MeteorODataAPIV4Router } from '@steedos/core'
 
 const schemaConfig = `
@@ -35,6 +36,7 @@ const schemaConfig = `
     _id: String
     columns: JSONObject
     subscriptions: JSONObject
+    objects: JSONObject
     plan: Plan
     github: Github
     createdAt: String
@@ -133,46 +135,48 @@ const replaceColumnsAndSubscriptions = async (
     subscriptionsUpdatedAt: string 
   }, 
   req: any) => {
-    const tokens = getTokens(req)
     const userId = await getUserId(req)
     const spaceId = await getSpaceId(req)
 
-    const dbcolumns = await db.getObject("devhub_columns").find({
-      filters: [["space", "=", spaceId],["owner", "=", userId]],
-      fields: ["_id"]
-    })
-    for (let column of dbcolumns) {
-      await db.getObject("devhub_columns").delete(column._id)
-    }
     const columnIds = []
     for (let column of params.columns) {
+      columnIds.push(column.id)
       column.name = column.id
       column.space = spaceId
       column.owner = userId 
       column.created_by = userId
+      const id = column.id
       delete column.id
-      const columnId = await db.getObject("devhub_columns").insert(column)
-      columnIds.push(columnId._id)
+      createOrUpdateColumn(id, column)
     }
-
-
-    const dbsubscriptions = await db.getObject("devhub_subscriptions").find({
-      filters: [["space", "=", spaceId],["owner", "=", userId]],
-      fields: ["_id"]
+    const dbColumns = await db.getObject("devhub_columns").find({
+      filters: [["owner", "=", userId], ["space", "=", spaceId]],
     })
-
-    for (let sub of dbsubscriptions) {
-      await db.getObject("devhub_subscriptions").delete(sub._id)
+    for (let col of dbColumns) {
+      if (columnIds.indexOf(col.name)<0) {
+        db.getObject("devhub_columns").delete(col.name)
+      }
     }
+
     const subscriptionIds = []
     for (let subscription of params.subscriptions) {
+      subscriptionIds.push(subscription.id)
       subscription.name = subscription.id
       subscription.space = spaceId
       subscription.owner = userId 
       subscription.created_by = userId
+      const id = userId + "-" + Buffer.from(subscription.id).toString('base64').split("/").join("-")
       delete subscription.id
-      const subscriptionId = await db.getObject("devhub_subscriptions").insert(subscription)
-      subscriptionIds.push(subscriptionId._id)
+      createOrUpdateSubscription(id, subscription)
+    }
+    const dbSubscriptions = await db.getObject("devhub_subscriptions").find({
+      filters: [["owner", "=", userId], ["space", "=", spaceId]],
+    })
+    for (let sub of dbSubscriptions) {
+      if (subscriptionIds.indexOf(sub.name)<0) {
+        let id = userId + "-" + Buffer.from(sub.name).toString('base64').split("/").join("-")
+        db.getObject("devhub_subscriptions").delete(id)
+      }
     }
 
     createOrUpdateUser(userId, spaceId, {
@@ -256,7 +260,8 @@ const getMe = async (req: any) => {
 
   let columns = {
     allIds: [],
-    byId: {}
+    byId: {},
+    updatedAt: user.columnsUpdatedAt,
   }
   if (user.columnIds && user.columnIds.length>0) {
     columns.allIds = user.columnIds
@@ -277,21 +282,25 @@ const getMe = async (req: any) => {
 
   let subscriptions = {
     allIds: [],
-    byId: {}
+    byId: {},
+    updatedAt: user.subscriptionsUpdatedAt,
   }
   if (user.subscriptionIds && user.subscriptionIds.length>0) {
     subscriptions.allIds = user.subscriptionIds
     const dbSubscriptions = await db.getObject("devhub_subscriptions").find({
-      filters: [["owner", "=", userId], ["_id", "in", user.subscriptionIds]],
+      filters: [["owner", "=", userId]],
     })
     for (let item of dbSubscriptions) {
-      subscriptions.byId[item._id] = {
-        id: item._id,
+      subscriptions.byId[item.name] = {
+        id: item.name,
         type: item.type,
         subtype: item.subtype,
         params: item.params,
         createdAt: item.created,
         updatedAt: item.modified,
+      }
+      if (item.type === 'steedos_object' && db.getObject(item.subtype)) {
+        subscriptions.byId[item.name].object = db.getObject(item.subtype).toConfig()
       }
     }
   }
@@ -302,9 +311,9 @@ const getMe = async (req: any) => {
     subscriptions: subscriptions,
     github: getGithub(user),
     plan: getPlan(req),
-    createdAt: "2019-09-20T11:47:09.644Z",
-    updatedAt: "2019-09-24T06:37:44.974Z",
-    lastLoginAt: "2019-09-24T05:37:44.937Z"
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    lastLoginAt: new Date().toISOString()
   }
   console.log(me)
   return me;

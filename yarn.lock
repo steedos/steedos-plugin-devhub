@@ -822,6 +822,11 @@
     saml-idp "^1.1.0"
     tslib "1.10.0"
 
+"@steedos/app-contracts@^1.7.0":
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/@steedos/app-contracts/-/app-contracts-1.7.0.tgz#454120e0ee14c726011857096343f64e0844cee7"
+  integrity sha512-jR+zwFp8bzWQVDEEwQbC1cF6CCG3xRC+Ba+jsct1pczE+AuIh91hTwm6EULv6FtU0vXej7+V0o3xPV39+KIIbA==
+
 "@steedos/auth@^1.7.0":
   version "1.7.0"
   resolved "https://registry.yarnpkg.com/@steedos/auth/-/auth-1.7.0.tgz#e48a952208f56a6331f640fcc559086d237966d6"

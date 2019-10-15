@@ -50,7 +50,7 @@ export const getUserId = async (req) => {
 }
 
 export const createOrUpdateUser = async (userId, spaceId, doc) => {
-  const id = userId + "," + spaceId
+  const id = userId + "-" + spaceId
   const dbUser = await db.getObject("devhub_users").findOne(id, {});
   if (dbUser)
     return await db.getObject("devhub_users").updateOne(id, doc);
@@ -60,12 +60,35 @@ export const createOrUpdateUser = async (userId, spaceId, doc) => {
       space: spaceId,
       owner: userId
     }, doc)
-    console.log(user)
     return await db.getObject("devhub_users").insert(user);
   }
 }
 
 export const getUser = async (userId, spaceId) => {
-  const id = userId + "," + spaceId
+  const id = userId + "-" + spaceId
   return await db.getObject("devhub_users").findOne(id, {});
+}
+
+export const createOrUpdateColumn = async (id, doc) => {
+  const record = await db.getObject("devhub_columns").findOne(id, {});
+  if (record)
+    return await db.getObject("devhub_columns").updateOne(id, doc);
+  else {
+    const newDoc = Object.assign({
+      _id: id,
+    }, doc)
+    return await db.getObject("devhub_columns").insert(newDoc);
+  }
+}
+
+export const createOrUpdateSubscription = async (id, doc) => {
+  const record = await db.getObject("devhub_subscriptions").findOne(id, {});
+  if (record)
+    return await db.getObject("devhub_subscriptions").updateOne(id, doc);
+  else {
+    const newDoc = Object.assign({
+      _id: id,
+    }, doc)
+    return await db.getObject("devhub_subscriptions").insert(newDoc);
+  }
 }
