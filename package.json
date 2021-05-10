@@ -27,7 +27,7 @@
         "graphql-tools": "^4.0.5",
         "graphql-type-json": "^0.3.0",
         "lint": "^0.7.0",
-        "lodash": "^4.17.15",
+        "lodash": "^4.17.21",
         "oauth": "^0.9.15"
     },
     "repository": {
